@@ -413,6 +413,7 @@ namespace benchmarksql
             {
                 public C1Config()
                 {
+                    this.CacheLength = MB(512L);
                     this.EnsureTable<T1>("T1", "Id");
                 }
             }
