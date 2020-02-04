@@ -14,7 +14,7 @@ namespace benchmarksql
         static int threadCount = 100_000;
         static int batchCount = 10;
 
-        static String root = "/tmp";
+        static String root = ""; //"/tmp/";
 
         static void Main(string[] args)
         {
@@ -176,8 +176,8 @@ namespace benchmarksql
 
         public static void TestSqlite()
         {
-            String sdbfile = $"Data Source={root}/test.db";
-            SQLiteConnection.CreateFile($"{root}/test.db");
+            String sdbfile = $"Data Source={root}test.db";
+            SQLiteConnection.CreateFile($"{root}test.db");
 
 
             using (var con = new SQLiteConnection(sdbfile))

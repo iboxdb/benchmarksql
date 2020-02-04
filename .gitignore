@@ -350,3 +350,6 @@ MigrationBackup/
 .ionide/
 .vscode/launch.json
 .vscode/tasks.json
+db1.box
+db1.box.swp
+test.db
