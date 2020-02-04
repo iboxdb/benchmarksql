@@ -10,6 +10,9 @@ Benchmark with SQLite
 
 **SQLite.Core**
 
+```sh
+dotnet run -c Release
+```
 
 ```sql
 threadCount= 100,000 batchCount= 10 
