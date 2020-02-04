@@ -14,10 +14,15 @@ namespace benchmarksql
         static int threadCount = 100_000;
         static int batchCount = 10;
 
-        static String root = ""; //"/tmp/";
+        static int reinterationSelect = 3;
+
+        //never set root = "" or "./", when inside a IDE, 
+        //the IDE would open the database-files and block writing.
+        static String root = "../"; //"/tmp/";
 
         static void Main(string[] args)
         {
+            Console.WriteLine($"ThreadCount={threadCount.ToString("N0")}, batchCount={batchCount}, reinteration={reinterationSelect}");
             Console.WriteLine("iBoxDB");
             TestiBoxDB();
 
@@ -67,28 +72,32 @@ namespace benchmarksql
                 {
                     var id = (p * batchCount) + i;
                     box["T1"].Insert(new T1 { Id = id, S = id.ToString() });
+                    Interlocked.Add(ref count, 1);
                 }
                 CommitResult cr = box.Commit();
 
                 var minId = p * batchCount + 0;
                 var maxId = p * batchCount + batchCount;
-                using var boxt = db.Cube();
-                var reader = boxt.Select<T1>("from T1 where Id>=? & Id<? order by Id", minId, maxId).GetEnumerator();
-                var ti = minId;
-                while (reader.MoveNext())
-                {
-                    var iv = reader.Current.Id;
-                    if (ti != iv)
+                for (int r = 0; r < reinterationSelect; r++)
+                    using (var boxt = db.Cube())
                     {
-                        throw new Exception(ti + "  " + iv);
+                        var reader = boxt.Select<T1>("from T1 where Id>=? & Id<? order by Id", minId, maxId).GetEnumerator();
+                        var ti = minId;
+                        while (reader.MoveNext())
+                        {
+                            var iv = reader.Current.Id;
+                            if (ti != iv)
+                            {
+                                throw new Exception(ti + "  " + iv);
+                            }
+                            ti++;
+
+                        }
+                        if (ti != maxId)
+                        {
+                            throw new Exception();
+                        }
                     }
-                    ti++;
-                    Interlocked.Add(ref count, 1);
-                }
-                if (ti != maxId)
-                {
-                    throw new Exception();
-                }
 
             }
             );
@@ -235,6 +244,7 @@ namespace benchmarksql
                         com1.Parameters.AddWithValue("@Id", id);
                         com1.Parameters.AddWithValue("@S", id.ToString());
                         com1.ExecuteNonQuery();
+                        Interlocked.Add(ref count, 1);
                     }
 
                     com1.Transaction.Commit();
@@ -243,32 +253,32 @@ namespace benchmarksql
 
                 var minId = p * batchCount + 0;
                 var maxId = p * batchCount + batchCount;
-
-                using (var con2 = new SQLiteConnection(sdbfile))
-                {
-                    con2.Open();
-                    using var com2 = con2.CreateCommand();
-                    com2.CommandText = "select Id, S from T1 where Id>= @minId and Id< @maxId order by Id";
-                    com2.Parameters.AddWithValue("@minId", minId);
-                    com2.Parameters.AddWithValue("@maxId", maxId);
-
-                    using var reader = com2.ExecuteReader();
-                    var ti = minId;
-                    while (reader.Read())
+                for (int r = 0; r < reinterationSelect; r++)
+                    using (var con2 = new SQLiteConnection(sdbfile))
                     {
-                        var iv = reader.GetInt32(0);
-                        if (ti != iv)
+                        con2.Open();
+                        using var com2 = con2.CreateCommand();
+                        com2.CommandText = "select Id, S from T1 where Id>= @minId and Id< @maxId order by Id";
+                        com2.Parameters.AddWithValue("@minId", minId);
+                        com2.Parameters.AddWithValue("@maxId", maxId);
+
+                        using var reader = com2.ExecuteReader();
+                        var ti = minId;
+                        while (reader.Read())
                         {
-                            throw new Exception(ti + "  " + iv);
+                            var iv = reader.GetInt32(0);
+                            if (ti != iv)
+                            {
+                                throw new Exception(ti + "  " + iv);
+                            }
+                            ti++;
+
                         }
-                        ti++;
-                        Interlocked.Add(ref count, 1);
+                        if (ti != maxId)
+                        {
+                            throw new Exception();
+                        }
                     }
-                    if (ti != maxId)
-                    {
-                        throw new Exception();
-                    }
-                }
 
             }
             );

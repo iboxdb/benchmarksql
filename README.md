@@ -11,6 +11,7 @@ Benchmark with SQLite
 **SQLite.Core**
 
 ```sh
+//close all IDE first.
 dotnet run -c Release
 ```
 
