@@ -43,10 +43,10 @@ namespace benchmarksql
             using var db = server.GetInstance(idbFile);
             Console.Write("Database Transaction Test: ");
             using var box1 = db.Cube();
-            box1["T1"].Insert(new T1 { Id = -1, S = (-1).ToString() });
+            box1["T1"].Insert(new T1 { Id = -1, Value = (-1).ToString() });
 
             using var box2 = db.Cube();
-            box2["T1"].Insert(new T1 { Id = -2, S = (-2).ToString() });
+            box2["T1"].Insert(new T1 { Id = -2, Value = (-2).ToString() });
 
             var transaction1 = box1.Select<T1>("from T1").ToArray();
             var transaction2 = box2.Select<T1>("from T1").ToArray();
@@ -71,7 +71,7 @@ namespace benchmarksql
                 for (int i = 0; i < batchCount; i++)
                 {
                     var id = (p * batchCount) + i;
-                    box["T1"].Insert(new T1 { Id = id, S = id.ToString() });
+                    box["T1"].Insert(new T1 { Id = id, Value = id.ToString() });
                     Interlocked.Add(ref count, 1);
                 }
                 CommitResult cr = box.Commit();
@@ -116,7 +116,7 @@ namespace benchmarksql
                 {
                     var id = (p * batchCount) + i;
                     var t = box["T1", id].Update<T1>();
-                    t.S = "A" + t.S;
+                    t.Value = "A" + t.Value;
                     Interlocked.Add(ref count, 1);
                 }
                 CommitResult cr = box.Commit();
@@ -134,7 +134,7 @@ namespace benchmarksql
                     {
                         throw new Exception(ti + "  " + iv);
                     }
-                    if (reader.Current.S != ("A" + iv))
+                    if (reader.Current.Value != ("A" + iv))
                     {
                         throw new Exception();
                     }
@@ -404,7 +404,7 @@ namespace benchmarksql
         {
             public T1() { }
             public int Id { get; set; }
-            public string S;
+            public string Value;
         }
 
         class AppServer : LocalDatabaseServer
@@ -413,7 +413,7 @@ namespace benchmarksql
             {
                 public C1Config()
                 {
-                    this.CacheLength = MB(512L);
+                    //this.CacheLength = MB(512L);
                     this.EnsureTable<T1>("T1", "Id");
                 }
             }
