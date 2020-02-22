@@ -156,6 +156,30 @@ namespace benchmarksql
             count = 0;
             Parallel.For(0, threadCount, (p) =>
             {
+                var minId = p * batchCount + 0;
+                var maxId = p * batchCount + batchCount;
+                using var boxt = db.Cube();
+                var reader = boxt.Select<T1>("from T1 where Id>=? & Id<? order by Id", minId, maxId).GetEnumerator();
+                var ti = minId;
+                while (reader.MoveNext())
+                {
+                    var iv = reader.Current.Id;
+                    if (ti != iv)
+                    {
+                        throw new Exception(ti + "  " + iv);
+                    }
+                    if (reader.Current.Value != ("A" + iv))
+                    {
+                        throw new Exception();
+                    }
+                    ti++;
+                }
+                if (ti != maxId)
+                {
+                    throw new Exception();
+                }
+
+
                 using var box = db.Cube();
                 for (int i = 0; i < batchCount; i++)
                 {
@@ -361,6 +385,37 @@ namespace benchmarksql
             count = 0;
             Parallel.For(0, threadCount, (p) =>
             {
+                var minId = p * batchCount + 0;
+                var maxId = p * batchCount + batchCount;
+
+                using var con2 = new SQLiteConnection(sdbfile);
+
+                con2.Open();
+                using var com2 = con2.CreateCommand();
+                com2.CommandText = "select Id, S from T1 where Id>= @minId and Id< @maxId order by Id";
+                com2.Parameters.AddWithValue("@minId", minId);
+                com2.Parameters.AddWithValue("@maxId", maxId);
+
+                using var reader = com2.ExecuteReader();
+
+                var ti = minId;
+                while (reader.Read())
+                {
+                    var iv = reader.GetInt32(0);
+                    if (ti != iv)
+                    {
+                        throw new Exception(ti + "  " + iv);
+                    }
+                    if (reader.GetString(1) != ("A" + iv))
+                    {
+                        throw new Exception();
+                    }
+                    ti++;
+                }
+                if (ti != maxId)
+                {
+                    throw new Exception();
+                }
 
                 using (var con1 = new SQLiteConnection(sdbfile))
                 {
