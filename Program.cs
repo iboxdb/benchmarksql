@@ -22,6 +22,7 @@ namespace benchmarksql
 
         static void Main(string[] args)
         {
+            Console.WriteLine("Benchmark Version 1.1");
             Console.WriteLine($"ThreadCount={threadCount.ToString("N0")}, batchCount={batchCount}, reinteration={reinterationSelect}");
             Console.WriteLine("iBoxDB");
             TestiBoxDB();
@@ -122,27 +123,32 @@ namespace benchmarksql
                 CommitResult cr = box.Commit();
 
 
+
                 var minId = p * batchCount + 0;
                 var maxId = p * batchCount + batchCount;
-                using var boxt = db.Cube();
-                var reader = boxt.Select<T1>("from T1 where Id>=? & Id<? order by Id", minId, maxId).GetEnumerator();
-                var ti = minId;
-                while (reader.MoveNext())
+
+                for (int r = 0; r < reinterationSelect; r++)
                 {
-                    var iv = reader.Current.Id;
-                    if (ti != iv)
+                    using var boxt = db.Cube();
+                    var reader = boxt.Select<T1>("from T1 where Id>=? & Id<? order by Id", minId, maxId).GetEnumerator();
+                    var ti = minId;
+                    while (reader.MoveNext())
                     {
-                        throw new Exception(ti + "  " + iv);
+                        var iv = reader.Current.Id;
+                        if (ti != iv)
+                        {
+                            throw new Exception(ti + "  " + iv);
+                        }
+                        if (reader.Current.Value != ("A" + iv))
+                        {
+                            throw new Exception();
+                        }
+                        ti++;
                     }
-                    if (reader.Current.Value != ("A" + iv))
+                    if (ti != maxId)
                     {
                         throw new Exception();
                     }
-                    ti++;
-                }
-                if (ti != maxId)
-                {
-                    throw new Exception();
                 }
             }
             );
@@ -158,25 +164,28 @@ namespace benchmarksql
             {
                 var minId = p * batchCount + 0;
                 var maxId = p * batchCount + batchCount;
-                using var boxt = db.Cube();
-                var reader = boxt.Select<T1>("from T1 where Id>=? & Id<? order by Id", minId, maxId).GetEnumerator();
-                var ti = minId;
-                while (reader.MoveNext())
+                for (int r = 0; r < reinterationSelect; r++)
                 {
-                    var iv = reader.Current.Id;
-                    if (ti != iv)
+                    using var boxt = db.Cube();
+                    var reader = boxt.Select<T1>("from T1 where Id>=? & Id<? order by Id", minId, maxId).GetEnumerator();
+                    var ti = minId;
+                    while (reader.MoveNext())
                     {
-                        throw new Exception(ti + "  " + iv);
+                        var iv = reader.Current.Id;
+                        if (ti != iv)
+                        {
+                            throw new Exception(ti + "  " + iv);
+                        }
+                        if (reader.Current.Value != ("A" + iv))
+                        {
+                            throw new Exception();
+                        }
+                        ti++;
                     }
-                    if (reader.Current.Value != ("A" + iv))
+                    if (ti != maxId)
                     {
                         throw new Exception();
                     }
-                    ti++;
-                }
-                if (ti != maxId)
-                {
-                    throw new Exception();
                 }
 
 
@@ -197,7 +206,7 @@ namespace benchmarksql
             avg = (int)(count / BoxSystem.DBDebug.StopWatch().TotalSeconds);
             Console.WriteLine("iBoxDB Delete:" + count.ToString("N0") + "  AVG: " + avg.ToString("N0") + " objects/s");
 
-            if (db.Get().SelectCount("from T1") != 2)
+            if (db.Get().SelectCount("from T1") != 2) //transaction insert 2 more objects.
             {
                 throw new Exception();
             }
@@ -343,34 +352,36 @@ namespace benchmarksql
 
                 var minId = p * batchCount + 0;
                 var maxId = p * batchCount + batchCount;
-
-                using var con2 = new SQLiteConnection(sdbfile);
-
-                con2.Open();
-                using var com2 = con2.CreateCommand();
-                com2.CommandText = "select Id, S from T1 where Id>= @minId and Id< @maxId order by Id";
-                com2.Parameters.AddWithValue("@minId", minId);
-                com2.Parameters.AddWithValue("@maxId", maxId);
-
-                using var reader = com2.ExecuteReader();
-
-                var ti = minId;
-                while (reader.Read())
+                for (int r = 0; r < reinterationSelect; r++)
                 {
-                    var iv = reader.GetInt32(0);
-                    if (ti != iv)
+                    using var con2 = new SQLiteConnection(sdbfile);
+
+                    con2.Open();
+                    using var com2 = con2.CreateCommand();
+                    com2.CommandText = "select Id, S from T1 where Id>= @minId and Id< @maxId order by Id";
+                    com2.Parameters.AddWithValue("@minId", minId);
+                    com2.Parameters.AddWithValue("@maxId", maxId);
+
+                    using var reader = com2.ExecuteReader();
+
+                    var ti = minId;
+                    while (reader.Read())
                     {
-                        throw new Exception(ti + "  " + iv);
+                        var iv = reader.GetInt32(0);
+                        if (ti != iv)
+                        {
+                            throw new Exception(ti + "  " + iv);
+                        }
+                        if (reader.GetString(1) != ("A" + iv))
+                        {
+                            throw new Exception();
+                        }
+                        ti++;
                     }
-                    if (reader.GetString(1) != ("A" + iv))
+                    if (ti != maxId)
                     {
                         throw new Exception();
                     }
-                    ti++;
-                }
-                if (ti != maxId)
-                {
-                    throw new Exception();
                 }
             }
             );
@@ -387,34 +398,36 @@ namespace benchmarksql
             {
                 var minId = p * batchCount + 0;
                 var maxId = p * batchCount + batchCount;
-
-                using var con2 = new SQLiteConnection(sdbfile);
-
-                con2.Open();
-                using var com2 = con2.CreateCommand();
-                com2.CommandText = "select Id, S from T1 where Id>= @minId and Id< @maxId order by Id";
-                com2.Parameters.AddWithValue("@minId", minId);
-                com2.Parameters.AddWithValue("@maxId", maxId);
-
-                using var reader = com2.ExecuteReader();
-
-                var ti = minId;
-                while (reader.Read())
+                for (int r = 0; r < reinterationSelect; r++)
                 {
-                    var iv = reader.GetInt32(0);
-                    if (ti != iv)
+                    using var con2 = new SQLiteConnection(sdbfile);
+
+                    con2.Open();
+                    using var com2 = con2.CreateCommand();
+                    com2.CommandText = "select Id, S from T1 where Id>= @minId and Id< @maxId order by Id";
+                    com2.Parameters.AddWithValue("@minId", minId);
+                    com2.Parameters.AddWithValue("@maxId", maxId);
+
+                    using var reader = com2.ExecuteReader();
+
+                    var ti = minId;
+                    while (reader.Read())
                     {
-                        throw new Exception(ti + "  " + iv);
+                        var iv = reader.GetInt32(0);
+                        if (ti != iv)
+                        {
+                            throw new Exception(ti + "  " + iv);
+                        }
+                        if (reader.GetString(1) != ("A" + iv))
+                        {
+                            throw new Exception();
+                        }
+                        ti++;
                     }
-                    if (reader.GetString(1) != ("A" + iv))
+                    if (ti != maxId)
                     {
                         throw new Exception();
                     }
-                    ti++;
-                }
-                if (ti != maxId)
-                {
-                    throw new Exception();
                 }
 
                 using (var con1 = new SQLiteConnection(sdbfile))
@@ -443,12 +456,13 @@ namespace benchmarksql
             Console.WriteLine("SQLite Delete:" + count.ToString("N0") + "  AVG: " + avg.ToString("N0") + " objects/s");
 
 
+
+            var stm = "select count(*) from T1";
+            using (var con = new SQLiteConnection(sdbfile))
             {
-                var stm = "select count(*) from T1";
-                using var con = new SQLiteConnection(sdbfile);
                 con.Open();
                 var cmd = new SQLiteCommand(stm, con);
-                if (cmd.ExecuteScalar().ToString() != "0")
+                if (cmd.ExecuteScalar().ToString() != "0") //no transaction objects
                 {
                     throw new Exception();
                 }
