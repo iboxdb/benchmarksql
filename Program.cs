@@ -22,7 +22,7 @@ namespace benchmarksql
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Benchmark Version 1.1");
+            Console.WriteLine("Benchmark Version 1.1.23");
             Console.WriteLine($"ThreadCount={threadCount.ToString("N0")}, batchCount={batchCount}, reinteration={reinterationSelect}");
             Console.WriteLine("iBoxDB");
             TestiBoxDB();
