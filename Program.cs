@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Linq;
-using System.Data.SQLite;
-using iBoxDB.LocalServer;
 using System.Threading.Tasks;
 using System.Threading;
+using System.IO;
 
-namespace benchmarksql
+
+using System.Data.SQLite;
+using iBoxDB.LocalServer;
+using iBoxDB.LocalServer.IO;
+
+namespace BenchmarkSQL
 {
 
     class Program
@@ -22,7 +26,13 @@ namespace benchmarksql
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Benchmark Version 1.1.24");
+            Console.WriteLine("Benchmark Version 1.1.3");
+
+            root = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            root = Path.Combine(root, "TEST_BM_SQL");
+            Directory.CreateDirectory(root);
+            Console.WriteLine($"PATH: {root}");
+
             Console.WriteLine($"ThreadCount={threadCount.ToString("N0")}, batchCount={batchCount}, reinteration={reinterationSelect}");
             Console.WriteLine("iBoxDB");
             TestiBoxDB();
@@ -218,8 +228,9 @@ namespace benchmarksql
 
         public static void TestSqlite()
         {
-            String sdbfile = $"Data Source={root}test.db";
-            SQLiteConnection.CreateFile($"{root}test.db");
+            String sroot = Path.Combine(root, "test.db");
+            String sdbfile = $"Data Source={sroot}";
+            SQLiteConnection.CreateFile($"{sroot}");
 
 
             using (var con = new SQLiteConnection(sdbfile))
@@ -478,7 +489,7 @@ namespace benchmarksql
 
         class AppServer : LocalDatabaseServer
         {
-            public class C1Config : iBoxDB.LocalServer.IO.BoxFileStreamConfig
+            public class C1Config : BoxFileStreamConfig
             {
                 public C1Config()
                 {
