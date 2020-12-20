@@ -6,7 +6,7 @@ Benchmark with SQLite
 
 **VM 2cores + 8G**
 
-**iBoxDB.NET v2.21**
+**iBoxDB.NET**
 
 **SQLite.Core**
 
