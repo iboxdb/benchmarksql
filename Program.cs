@@ -26,9 +26,10 @@ namespace BenchmarkSQL
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Benchmark Version 1.1.3");
+            Console.WriteLine("Benchmark Version 1.1.4");
 
-            root = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            //root = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            root = "../";
             root = Path.Combine(root, "TEST_BM_SQL");
             Directory.CreateDirectory(root);
             Console.WriteLine($"PATH: {root}");
