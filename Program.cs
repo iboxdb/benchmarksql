@@ -26,7 +26,7 @@ namespace BenchmarkSQL
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Benchmark Version 1.1.4");
+            Console.WriteLine("Benchmark Version 1.1.5");
 
             //root = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             root = "../";
@@ -483,9 +483,8 @@ namespace BenchmarkSQL
 
         public class T1
         {
-            public T1() { }
             public int Id { get; set; }
-            public string Value;
+            public string? Value;
         }
 
         class AppServer : LocalDatabaseServer
